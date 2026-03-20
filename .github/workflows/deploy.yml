@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -28,7 +28,7 @@ jobs:
           proba = model.predict_proba(np.zeros((1, 30)))[0][1]
           print('Model loaded successfully!')
           print('Test prediction:', pred)
-          print('Test probability:', proba)
+          print('Test probability:', round(float(proba), 4))
           "
 
   deploy:
@@ -36,7 +36,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Trigger Render deployment
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
-          echo "Deployment triggered on Render!"
+          echo "Deployment triggered!"
