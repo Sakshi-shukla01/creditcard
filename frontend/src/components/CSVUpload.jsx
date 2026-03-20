@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 
 const API_URL = process.env.NODE_ENV === 'production'
-  ? 'https://your-app.onrender.com'
+  ? 'https://creditcard-abit.onrender.com'
   : 'http://localhost:5000';
 
 export default function CSVUpload({ onBatchResult }) {
