@@ -1,0 +1,7 @@
+venv/
+frontend/
+mlruns/
+mlflow.db
+creditcard.csv
+__pycache__/
+*.pyc

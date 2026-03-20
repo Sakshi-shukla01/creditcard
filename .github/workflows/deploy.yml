@@ -1,0 +1,61 @@
+name: Deploy Fraud Detection App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  # ── Job 1: Test Flask API ────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Test Flask health endpoint
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          python -c "
+          import pickle, numpy as np
+          model = pickle.load(open('model.pkl', 'rb'))
+          features = np.zeros((1, 30))
+          pred = model.predict(features)
+          print('Model test passed! Prediction:', pred)
+          "
+
+  # ── Job 2: Build Docker image ────────────────────────────────
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t fraud-api .
+          echo "Docker build successful!"
+
+  # ── Job 3: Deploy to Render ──────────────────────────────────
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy to Render
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+          echo "Deployment triggered!"
